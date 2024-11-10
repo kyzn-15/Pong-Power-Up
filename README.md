@@ -1,1 +1,1 @@
-# Pong Gasme with Power-Up by Kevin Wilbert Johan 11 IPA 1
+# Pong Game with Power-Up by Kevin Wilbert Johan 11 IPA 1
