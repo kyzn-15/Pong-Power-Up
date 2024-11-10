@@ -1,0 +1,4 @@
+hal yang berubah:
+1. memecah code dari yang main saja menjadi main, conf, dan sprites
+2. mengubah bola dengan ball.png
+3. membuat ball berputar ketika melayang dan terbentur ke ujung screen
