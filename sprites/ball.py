@@ -12,7 +12,7 @@ class Ball:
         self.y_vel = 0
         self.image = pygame.image.load("./assets/ball.png")
         self.image = pygame.transform.scale(self.image, (radius * 2, radius * 2))
-        self.angle = 0  
+        self.angle = 0
 
     def draw(self, win):
         rotated_image = pygame.transform.rotate(self.image, self.angle)
@@ -22,11 +22,11 @@ class Ball:
     def move(self):
         self.x += self.x_vel
         self.y += self.y_vel
-        self.angle = (self.angle + 5) % 360  
+        self.angle = (self.angle + 5) % 360
 
     def reset(self):
         self.x = self.original_x
         self.y = self.original_y
         self.y_vel = 0
         self.x_vel *= -1
-        self.angle = 0  
+        self.angle = 0
