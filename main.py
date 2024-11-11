@@ -82,6 +82,14 @@ def countdown(win):
         pygame.display.update()
         time.sleep(1)
 
+def show_winner(win, winner_text):
+    win.fill(Conf.BLACK)
+    text = Conf.SCORE_FONT.render(winner_text, 1, Conf.WHITE)
+    win.blit(text, (Conf.WIDTH // 2 - text.get_width() // 2, 
+                    Conf.HEIGHT // 2 - text.get_height() // 2))
+    pygame.display.update()
+    pygame.time.delay(5000)
+
 def main():
     run = True
     clock = pygame.time.Clock()
@@ -112,6 +120,30 @@ def main():
                 run = False
                 break
 
+        # Check win condition first
+        if left_score >= Conf.WINNING_SCORE:
+            show_winner(WIN, "Left Player Won!")
+            # Reset game state
+            ball.reset()
+            left_paddle.reset()
+            right_paddle.reset()
+            power_up.reset_position()
+            left_score = 0
+            right_score = 0
+            countdown(WIN)  # Start new game with countdown
+            continue
+        elif right_score >= Conf.WINNING_SCORE:
+            show_winner(WIN, "Right Player Won!")
+            # Reset game state
+            ball.reset()
+            left_paddle.reset()
+            right_paddle.reset()
+            power_up.reset_position()
+            left_score = 0
+            right_score = 0
+            countdown(WIN)  # Start new game with countdown
+            continue
+
         # Game logic
         keys = pygame.key.get_pressed()
         handle_paddle_movement(keys, left_paddle, right_paddle)
@@ -140,36 +172,14 @@ def main():
             right_score += 1
             ball.reset()
             power_up.reset_position()
-            countdown(WIN)
+            if right_score < Conf.WINNING_SCORE:  # Only countdown if game isn't won
+                countdown(WIN)
         elif ball.x > Conf.WIDTH:
             left_score += 1
             ball.reset()
             power_up.reset_position()
-            countdown(WIN)
-
-        # Win condition checking
-        won = False
-        if left_score >= Conf.WINNING_SCORE:
-            won = True
-            win_text = "Left Player Won!"
-        elif right_score >= Conf.WINNING_SCORE:
-            won = True
-            win_text = "Right Player Won!"
-        
-        if won:
-            text = Conf.SCORE_FONT.render(win_text, 1, Conf.WHITE)
-            WIN.blit(text, (Conf.WIDTH // 2 - text.get_width() // 2, 
-                          Conf.HEIGHT // 2 - text.get_height() // 2))
-            pygame.display.update()
-            pygame.time.delay(5000)
-            
-            # Reset game state without countdown
-            ball.reset()
-            left_paddle.reset()
-            right_paddle.reset()
-            power_up.reset_position()
-            left_score = 0
-            right_score = 0
+            if left_score < Conf.WINNING_SCORE:  # Only countdown if game isn't won
+                countdown(WIN)
 
     pygame.quit()
 
