@@ -69,7 +69,7 @@ class PowerUp:
             if self.type == "speed_boost":
                 paddles[0].VEL += 3  
             elif self.type == "paddle_enlarge":
-                # Affect both paddles
+                
                 for paddle in paddles:
                     paddle.height += 30
                     self.affected_paddles.append(paddle)
@@ -79,7 +79,7 @@ class PowerUp:
     def update(self, paddles, ball):
         current_time = time.time()
         
-        # Check for expired effects
+        
         for effect_type in self.active_effects:
             if self.active_effects[effect_type]:
                 if current_time - self.start_time >= self.COOLDOWN_DURATION:
