@@ -1,8 +1,10 @@
 import pygame
 import random
+import time
 from conf import Conf  
 from sprites.paddle import Paddle
 from sprites.ball import Ball
+from sprites.power_up import PowerUp
 
 pygame.init()
 
@@ -11,43 +13,37 @@ pygame.display.set_caption("Pong")
 
 def draw(win, paddles, ball, left_score, right_score, power_up):
     win.fill(Conf.BLACK)
+    
+    # Draw scores
     left_score_text = Conf.SCORE_FONT.render(f"{left_score}", 1, Conf.WHITE)
     right_score_text = Conf.SCORE_FONT.render(f"{right_score}", 1, Conf.WHITE)
     win.blit(left_score_text, (Conf.WIDTH // 4 - left_score_text.get_width() // 2, 20))
     win.blit(right_score_text, (Conf.WIDTH * (3 / 4) - right_score_text.get_width() // 2, 20))
-    for paddle in paddles:
-        paddle.draw(win)
+    
+    # Draw center line
     for i in range(10, Conf.HEIGHT, Conf.HEIGHT // 20):
         if i % 2 == 1:
             continue
         pygame.draw.rect(win, Conf.WHITE, (Conf.WIDTH // 2 - 5, i, 10, Conf.HEIGHT // 20))
+    
+    # Draw paddles and ball
+    for paddle in paddles:
+        paddle.draw(win)
     ball.draw(win)
     
-    
-    if power_up:
-        pygame.draw.rect(win, Conf.WHITE, (power_up["x"], power_up["y"], Conf.POWER_UP_SIZE, Conf.POWER_UP_SIZE))
+    # Draw power-up
+    power_up.draw(win)
     
     pygame.display.update()
 
-def spawn_power_up():
-    x = random.randint(Conf.WIDTH // 4, Conf.WIDTH * 3 // 4)
-    y = random.randint(Conf.HEIGHT // 4, Conf.HEIGHT * 3 // 4)
-    power_type = random.choice(Conf.POWER_UP_TYPES)
-    return {"x": x, "y": y, "type": power_type}
-
-def apply_power_up(power_up, left_paddle, right_paddle, ball):
-    if power_up["type"] == "increase_paddle_size":
-        left_paddle.height *= 1.5
-        right_paddle.height *= 1.5
-    elif power_up["type"] == "increase_ball_speed":
-        ball.x_vel *= 1.5
-        ball.y_vel *= 1.5
-
 def handle_collision(ball, left_paddle, right_paddle):
+    # Ball collision with top and bottom
     if ball.y + ball.radius >= Conf.HEIGHT:
         ball.y_vel *= -1
     elif ball.y - ball.radius <= 0:
         ball.y_vel *= -1
+    
+    # Ball collision with paddles
     if ball.x_vel < 0:
         if ball.y >= left_paddle.y and ball.y <= left_paddle.y + left_paddle.height:
             if ball.x - ball.radius <= left_paddle.x + left_paddle.width:
@@ -77,44 +73,81 @@ def handle_paddle_movement(keys, left_paddle, right_paddle):
     if keys[pygame.K_DOWN] and right_paddle.y + right_paddle.VEL + right_paddle.height <= Conf.HEIGHT:
         right_paddle.move(up=False)
 
+def countdown(win):
+    for i in range(3, 0, -1):
+        win.fill(Conf.BLACK)
+        countdown_text = Conf.SCORE_FONT.render(str(i), 1, Conf.WHITE)
+        win.blit(countdown_text, (Conf.WIDTH // 2 - countdown_text.get_width() // 2, 
+                                Conf.HEIGHT // 2 - countdown_text.get_height() // 2))
+        pygame.display.update()
+        time.sleep(1)
+
 def main():
     run = True
     clock = pygame.time.Clock()
-    left_paddle = Paddle(10, Conf.HEIGHT // 2 - Conf.PADDLE_HEIGHT // 2, Conf.PADDLE_WIDTH, Conf.PADDLE_HEIGHT)
-    right_paddle = Paddle(Conf.WIDTH - 10 - Conf.PADDLE_WIDTH, Conf.HEIGHT // 2 - Conf.PADDLE_HEIGHT // 2, Conf.PADDLE_WIDTH, Conf.PADDLE_HEIGHT)
+    
+    # Initialize game objects
+    left_paddle = Paddle(10, Conf.HEIGHT // 2 - Conf.PADDLE_HEIGHT // 2, 
+                        Conf.PADDLE_WIDTH, Conf.PADDLE_HEIGHT)
+    right_paddle = Paddle(Conf.WIDTH - 10 - Conf.PADDLE_WIDTH, 
+                         Conf.HEIGHT // 2 - Conf.PADDLE_HEIGHT // 2,
+                         Conf.PADDLE_WIDTH, Conf.PADDLE_HEIGHT)
     ball = Ball(Conf.WIDTH // 2, Conf.HEIGHT // 2, Conf.BALL_RADIUS)
+    power_up = PowerUp()
+    
+    # Initialize scores
     left_score = 0
     right_score = 0
-    power_up = spawn_power_up()
+    
+    # Initial countdown
+    countdown(WIN)
 
     while run:
         clock.tick(Conf.FPS)
         draw(WIN, [left_paddle, right_paddle], ball, left_score, right_score, power_up)
         
+        # Event handling
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
                 break
 
+        # Game logic
         keys = pygame.key.get_pressed()
         handle_paddle_movement(keys, left_paddle, right_paddle)
-        
         ball.move()
         handle_collision(ball, left_paddle, right_paddle)
-
         
-        if power_up and power_up["x"] < ball.x < power_up["x"] + Conf.POWER_UP_SIZE and power_up["y"] < ball.y < power_up["y"] + Conf.POWER_UP_SIZE:
-            apply_power_up(power_up, left_paddle, right_paddle, ball)
-            power_up = spawn_power_up()  
-
+        # Update power-ups
+        power_up.update(left_paddle if ball.x_vel < 0 else right_paddle, ball)
         
+        # Check for power-up collision
+        if not power_up.active:
+            power_up_rect = pygame.Rect(power_up.x - power_up.radius, 
+                                      power_up.y - power_up.radius,
+                                      power_up.radius * 2, 
+                                      power_up.radius * 2)
+            ball_rect = pygame.Rect(ball.x - ball.radius,
+                                  ball.y - ball.radius,
+                                  ball.radius * 2,
+                                  ball.radius * 2)
+            
+            if power_up_rect.colliderect(ball_rect):
+                power_up.apply_effect(left_paddle if ball.x_vel < 0 else right_paddle, ball)
+        
+        # Score handling
         if ball.x < 0:
             right_score += 1
             ball.reset()
+            power_up.reset_position()
+            countdown(WIN)
         elif ball.x > Conf.WIDTH:
             left_score += 1
             ball.reset()
+            power_up.reset_position()
+            countdown(WIN)
 
+        # Win condition checking
         won = False
         if left_score >= Conf.WINNING_SCORE:
             won = True
@@ -125,15 +158,18 @@ def main():
         
         if won:
             text = Conf.SCORE_FONT.render(win_text, 1, Conf.WHITE)
-            WIN.blit(text, (Conf.WIDTH // 2 - text.get_width() // 2, Conf.HEIGHT // 2 - text.get_height() // 2))
+            WIN.blit(text, (Conf.WIDTH // 2 - text.get_width() // 2, 
+                          Conf.HEIGHT // 2 - text.get_height() // 2))
             pygame.display.update()
             pygame.time.delay(5000)
+            
+            # Reset game state without countdown
             ball.reset()
             left_paddle.reset()
             right_paddle.reset()
+            power_up.reset_position()
             left_score = 0
             right_score = 0
-            power_up = spawn_power_up()  
 
     pygame.quit()
 
