@@ -1,5 +1,11 @@
 import pygame
+import os
+import sys
 from conf import Conf
+
+def resource_path(relative_path):
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
 
 class Ball:
     MAX_VEL = 5
@@ -10,7 +16,7 @@ class Ball:
         self.radius = radius
         self.x_vel = self.MAX_VEL
         self.y_vel = 0
-        self.image = pygame.image.load("./assets/ball.png")
+        self.image = pygame.image.load(resource_path("assets/ball.png"))
         self.image = pygame.transform.scale(self.image, (radius * 2, radius * 2))
         self.angle = 0
 
