@@ -1,3 +1,5 @@
+# ./sprites/power_up.py
+
 import pygame
 import random
 import time
@@ -20,6 +22,7 @@ class PowerUp:
             "paddle_enlarge": False,
             "ball_slow": False
         }
+        self.affected_paddles = []  # Keep track of affected paddles
         
     def get_color(self):
         colors = {
@@ -62,34 +65,40 @@ class PowerUp:
         text = font.render(effect_type.replace("_", " ").title(), True, (255, 255, 255))
         win.blit(text, (x + bar_width + 10, y))
         
-    def apply_effect(self, paddle, ball):
+    def apply_effect(self, paddles, ball):
         if not self.active_effects[self.type]:
             self.active = True
             self.active_effects[self.type] = True
             self.start_time = time.time()
             
             if self.type == "speed_boost":
-                paddle.VEL += 3
+                paddles[0].VEL += 3  # Only affect the paddle that hit the power-up
             elif self.type == "paddle_enlarge":
-                paddle.height += 30
+                # Affect both paddles
+                for paddle in paddles:
+                    paddle.height += 30
+                    self.affected_paddles.append(paddle)
             elif self.type == "ball_slow":
                 ball.x_vel = max(1, ball.x_vel - 2)
                 
-    def update(self, paddle, ball):
+    def update(self, paddles, ball):
         current_time = time.time()
         
         # Check for expired effects
         for effect_type in self.active_effects:
             if self.active_effects[effect_type]:
                 if current_time - self.start_time >= self.COOLDOWN_DURATION:
-                    self.remove_effect(effect_type, paddle, ball)
+                    self.remove_effect(effect_type, paddles, ball)
                     self.active_effects[effect_type] = False
+                    self.affected_paddles.clear()  # Clear the list of affected paddles
                     
-    def remove_effect(self, effect_type, paddle, ball):
+    def remove_effect(self, effect_type, paddles, ball):
         if effect_type == "speed_boost":
-            paddle.VEL -= 3
+            paddles[0].VEL -= 3
         elif effect_type == "paddle_enlarge":
-            paddle.height -= 30
+            # Remove enlarge effect from all affected paddles
+            for paddle in self.affected_paddles:
+                paddle.height -= 30
         elif effect_type == "ball_slow":
             ball.x_vel = ball.MAX_VEL
             
@@ -100,3 +109,4 @@ class PowerUp:
             self.x = random.randint(Conf.WIDTH // 4, Conf.WIDTH * 3 // 4)
             self.y = random.randint(50, Conf.HEIGHT - 50)
             self.color = self.get_color()
+            self.affected_paddles.clear()

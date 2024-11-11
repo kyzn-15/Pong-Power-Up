@@ -103,6 +103,8 @@ def main():
     ball = Ball(Conf.WIDTH // 2, Conf.HEIGHT // 2, Conf.BALL_RADIUS)
     power_up = PowerUp()
     
+    paddles = [left_paddle, right_paddle]  # Create a list of paddles
+    
     # Initialize scores
     left_score = 0
     right_score = 0
@@ -112,7 +114,7 @@ def main():
 
     while run:
         clock.tick(Conf.FPS)
-        draw(WIN, [left_paddle, right_paddle], ball, left_score, right_score, power_up)
+        draw(WIN, paddles, ball, left_score, right_score, power_up)
         
         # Event handling
         for event in pygame.event.get():
@@ -151,7 +153,7 @@ def main():
         handle_collision(ball, left_paddle, right_paddle)
         
         # Update power-ups
-        power_up.update(left_paddle if ball.x_vel < 0 else right_paddle, ball)
+        power_up.update(paddles, ball)
         
         # Check for power-up collision
         if not power_up.active:
@@ -165,7 +167,7 @@ def main():
                                   ball.radius * 2)
             
             if power_up_rect.colliderect(ball_rect):
-                power_up.apply_effect(left_paddle if ball.x_vel < 0 else right_paddle, ball)
+                power_up.apply_effect(paddles, ball)
         
         # Score handling
         if ball.x < 0:

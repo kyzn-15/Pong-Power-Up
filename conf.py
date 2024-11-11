@@ -4,7 +4,7 @@ pygame.init()
 pygame.font.init()  
 
 class Conf:
-    WIDTH, HEIGHT = 700, 500
+    WIDTH, HEIGHT = 900, 700
     FPS = 120
 
     WHITE = (255, 255, 255)
