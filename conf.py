@@ -20,3 +20,5 @@ class Conf:
     PADDLE_VEL = 4
     BALL_COLOR = WHITE
     BALL_MAX_VEL = 5
+
+    COUNTDOWN = 3

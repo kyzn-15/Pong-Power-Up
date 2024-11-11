@@ -5,7 +5,7 @@ from conf import Conf
 
 class PowerUp:
     TYPES = ["speed_boost", "paddle_enlarge", "ball_slow"]
-    COOLDOWN_DURATION = 10
+    COOLDOWN_DURATION = Conf.COUNTDOWN
 
     def __init__(self):
         self.type = random.choice(self.TYPES)
@@ -59,7 +59,8 @@ class PowerUp:
             self.active_effects[self.type] = True
             self.start_time = time.time()
             if self.type == "speed_boost":
-                paddles[0].VEL += 3
+                for paddle in paddles:
+                    paddle.VEL += 3
             elif self.type == "paddle_enlarge":
                 for paddle in paddles:
                     paddle.height += 30
@@ -78,7 +79,8 @@ class PowerUp:
 
     def remove_effect(self, effect_type, paddles, ball):
         if effect_type == "speed_boost":
-            paddles[0].VEL -= 3
+            for paddle in paddles:
+                paddle.VEL -= 3
         elif effect_type == "paddle_enlarge":
             for paddle in self.affected_paddles:
                 paddle.height -= 30
