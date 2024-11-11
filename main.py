@@ -138,12 +138,16 @@ def main():
         if ball.x < 0:
             right_score += 1
             ball.reset()
+            left_paddle.reset()
+            right_paddle.reset()
             power_up.reset_position()
             if right_score < Conf.WINNING_SCORE:
                 countdown(WIN)
         elif ball.x > Conf.WIDTH:
             left_score += 1
             ball.reset()
+            left_paddle.reset()
+            right_paddle.reset()
             power_up.reset_position()
             if left_score < Conf.WINNING_SCORE:
                 countdown(WIN)
