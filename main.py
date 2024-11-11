@@ -14,36 +14,36 @@ pygame.display.set_caption("Pong")
 def draw(win, paddles, ball, left_score, right_score, power_up):
     win.fill(Conf.BLACK)
     
-    # Draw scores
+    
     left_score_text = Conf.SCORE_FONT.render(f"{left_score}", 1, Conf.WHITE)
     right_score_text = Conf.SCORE_FONT.render(f"{right_score}", 1, Conf.WHITE)
     win.blit(left_score_text, (Conf.WIDTH // 4 - left_score_text.get_width() // 2, 20))
     win.blit(right_score_text, (Conf.WIDTH * (3 / 4) - right_score_text.get_width() // 2, 20))
     
-    # Draw center line
+    
     for i in range(10, Conf.HEIGHT, Conf.HEIGHT // 20):
         if i % 2 == 1:
             continue
         pygame.draw.rect(win, Conf.WHITE, (Conf.WIDTH // 2 - 5, i, 10, Conf.HEIGHT // 20))
     
-    # Draw paddles and ball
+    
     for paddle in paddles:
         paddle.draw(win)
     ball.draw(win)
     
-    # Draw power-up
+    
     power_up.draw(win)
     
     pygame.display.update()
 
 def handle_collision(ball, left_paddle, right_paddle):
-    # Ball collision with top and bottom
+    
     if ball.y + ball.radius >= Conf.HEIGHT:
         ball.y_vel *= -1
     elif ball.y - ball.radius <= 0:
         ball.y_vel *= -1
     
-    # Ball collision with paddles
+    
     if ball.x_vel < 0:
         if ball.y >= left_paddle.y and ball.y <= left_paddle.y + left_paddle.height:
             if ball.x - ball.radius <= left_paddle.x + left_paddle.width:
@@ -94,7 +94,6 @@ def main():
     run = True
     clock = pygame.time.Clock()
     
-    # Initialize game objects
     left_paddle = Paddle(10, Conf.HEIGHT // 2 - Conf.PADDLE_HEIGHT // 2, 
                         Conf.PADDLE_WIDTH, Conf.PADDLE_HEIGHT)
     right_paddle = Paddle(Conf.WIDTH - 10 - Conf.PADDLE_WIDTH, 
@@ -103,59 +102,50 @@ def main():
     ball = Ball(Conf.WIDTH // 2, Conf.HEIGHT // 2, Conf.BALL_RADIUS)
     power_up = PowerUp()
     
-    paddles = [left_paddle, right_paddle]  # Create a list of paddles
+    paddles = [left_paddle, right_paddle]  
     
-    # Initialize scores
     left_score = 0
     right_score = 0
     
-    # Initial countdown
     countdown(WIN)
 
     while run:
         clock.tick(Conf.FPS)
         draw(WIN, paddles, ball, left_score, right_score, power_up)
         
-        # Event handling
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
                 break
 
-        # Check win condition first
         if left_score >= Conf.WINNING_SCORE:
             show_winner(WIN, "Left Player Won!")
-            # Reset game state
             ball.reset()
             left_paddle.reset()
             right_paddle.reset()
             power_up.reset_position()
             left_score = 0
             right_score = 0
-            countdown(WIN)  # Start new game with countdown
+            countdown(WIN) 
             continue
         elif right_score >= Conf.WINNING_SCORE:
             show_winner(WIN, "Right Player Won!")
-            # Reset game state
             ball.reset()
             left_paddle.reset()
             right_paddle.reset()
             power_up.reset_position()
             left_score = 0
             right_score = 0
-            countdown(WIN)  # Start new game with countdown
+            countdown(WIN)
             continue
 
-        # Game logic
         keys = pygame.key.get_pressed()
         handle_paddle_movement(keys, left_paddle, right_paddle)
         ball.move()
         handle_collision(ball, left_paddle, right_paddle)
         
-        # Update power-ups
         power_up.update(paddles, ball)
         
-        # Check for power-up collision
         if not power_up.active:
             power_up_rect = pygame.Rect(power_up.x - power_up.radius, 
                                       power_up.y - power_up.radius,
@@ -169,18 +159,17 @@ def main():
             if power_up_rect.colliderect(ball_rect):
                 power_up.apply_effect(paddles, ball)
         
-        # Score handling
         if ball.x < 0:
             right_score += 1
             ball.reset()
             power_up.reset_position()
-            if right_score < Conf.WINNING_SCORE:  # Only countdown if game isn't won
+            if right_score < Conf.WINNING_SCORE:  
                 countdown(WIN)
         elif ball.x > Conf.WIDTH:
             left_score += 1
             ball.reset()
             power_up.reset_position()
-            if left_score < Conf.WINNING_SCORE:  # Only countdown if game isn't won
+            if left_score < Conf.WINNING_SCORE:  
                 countdown(WIN)
 
     pygame.quit()
