@@ -1,6 +1,7 @@
 import pygame
 import random
 import time
+import os
 from conf import Conf
 from sprites.paddle import Paddle
 from sprites.ball import Ball

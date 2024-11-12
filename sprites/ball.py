@@ -5,7 +5,11 @@ from conf import Conf
 
 def resource_path(relative_path):
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base_path, relative_path)
+    full_path = os.path.join(base_path, relative_path)
+    if not os.path.exists(full_path):
+        print(f"Debug: File not found at {full_path}")  # Print path for debugging
+        raise FileNotFoundError(f"File not found: {full_path}")
+    return full_path
 
 class Ball:
     MAX_VEL = 5
